@@ -21,10 +21,29 @@
         const gameOver = document.querySelector('.game-over');
         const gameScore = document.querySelector('.game-score');
 
-        gameStart.addEventListener('click', onGameStart)
+        gameStart.addEventListener('click', onGameStart);
+        document.addEventListener('keydown', onKeyDown);
+        document.addEventListener('keyup', onKeyUp);
+
+        let keys = {};
 
         function onGameStart() {
             gameStart.classList.add('hide');
+
+            const wizard = document.createElement('div');
+            wizard.classList.add('wizard');
+            wizard.style.top = '200px';
+            wizard.style.left = '300px';
+            gameArea.appendChild(wizard);
+
+        }
+
+        function onKeyDown(e) {
+            keys[e.code] = true;
+        }
+
+        function onKeyUp(e) {
+            keys[e.code] = false;
         }
     </script>
 </body>
