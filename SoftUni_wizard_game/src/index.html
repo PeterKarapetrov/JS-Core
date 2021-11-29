@@ -27,16 +27,54 @@
 
         let keys = {};
 
+        let player = {
+            x: 150,
+            y: 150
+        };
+
+        let game = {
+            speed: 2
+        };
+
+
         function onGameStart() {
             gameStart.classList.add('hide');
 
             const wizard = document.createElement('div');
             wizard.classList.add('wizard');
-            wizard.style.top = '200px';
-            wizard.style.left = '300px';
+            wizard.style.top = player.y + 'px';
+            wizard.style.left = player.x + 'px';
             gameArea.appendChild(wizard);
 
+            window.requestAnimationFrame(gameAction);
         }
+
+        function gameAction() {
+            let wizard = document.querySelector('.wizard');
+
+            if (keys.ArrowUp) {
+                player.y -= game.speed;
+                wizard.style.top = player.y + 'px';
+            }
+
+            if (keys.ArrowDown) {
+                player.y += game.speed;
+                wizard.style.top = player.y + 'px';
+            }
+
+            if (keys.ArrowLeft) {
+                player.x -= game.speed;
+                wizard.style.left = player.x + 'px';
+            }
+
+            if (keys.ArrowRight) {
+                player.x += game.speed;
+                wizard.style.left = player.x + 'px';
+            }
+
+            window.requestAnimationFrame(gameAction);
+        }
+
 
         function onKeyDown(e) {
             keys[e.code] = true;
