@@ -33,7 +33,8 @@
         };
 
         let game = {
-            speed: 2
+            speed: 2,
+            playerMoveMultiplayer: 4
         };
 
 
@@ -52,23 +53,29 @@
         function gameAction() {
             let wizard = document.querySelector('.wizard');
 
-            if (keys.ArrowUp) {
-                player.y -= game.speed;
-                wizard.style.top = player.y + 'px';
-            }
-
-            if (keys.ArrowDown) {
+            let isInAir = player.y + 100 <= gameArea.offsetHeight;
+            if (isInAir) {
                 player.y += game.speed;
                 wizard.style.top = player.y + 'px';
             }
 
-            if (keys.ArrowLeft) {
-                player.x -= game.speed;
+            if (keys.ArrowUp && player.y > 0) {
+                player.y -= game.speed * game.playerMoveMultiplayer;
+                wizard.style.top = player.y + 'px';
+            }
+
+            if (keys.ArrowDown && isInAir) {
+                player.y += game.speed * game.playerMoveMultiplayer;
+                wizard.style.top = player.y + 'px';
+            }
+
+            if (keys.ArrowLeft && player.x > 0) {
+                player.x -= game.speed * game.playerMoveMultiplayer;
                 wizard.style.left = player.x + 'px';
             }
 
-            if (keys.ArrowRight) {
-                player.x += game.speed;
+            if (keys.ArrowRight && player.x + 82 < gameArea.offsetWidth) {
+                player.x += game.speed * game.playerMoveMultiplayer;
                 wizard.style.left = player.x + 'px';
             }
 
