@@ -38,11 +38,13 @@
             speed: 2,
             playerMoveMultiplayer: 4,
             fireBallMultiplayer: 5,
-            fireInterval: 1000
+            fireInterval: 1000,
+            cloudSpawInterval: 5000
         }
 
         let scene = {
-            score: 0
+            score: 0,
+            lastCloudSpaw: 0
         }
 
 
@@ -61,6 +63,17 @@
         function gameAction(timestamp) {
             let wizard = document.querySelector('.wizard');
 
+            //Create cloud
+            if (timestamp - scene.lastCloudSpaw > game.cloudSpawInterval) {
+                let cloud = document.createElement('div');
+                cloud.classList.add('cloud');
+                cloud.x = gameArea.offsetWidth - 200;
+                cloud.style.left = cloud.x + 'px';
+                cloud.style.top = '200px';
+                gameArea.appendChild(cloud);
+                scene.lastCloudSpaw = timestamp;
+            }
+
             let isInAir = player.y + 100 <= gameArea.offsetHeight;
             scene.score++;
 
@@ -72,6 +85,17 @@
 
                 if (fireBall.x + 20 > gameArea.offsetWidth) {
                     fireBall.parentElement.removeChild(fireBall);
+                }
+            });
+
+            //Move clouds
+            let clouds = document.querySelectorAll('.cloud');
+            clouds.forEach(cloud => {
+                cloud.x -= game.speed;
+                cloud.style.left = cloud.x + 'px';
+
+                if (cloud.x + 200 == 0) {
+                    cloud.parentElement.removeChild(cloud);
                 }
             });
 
