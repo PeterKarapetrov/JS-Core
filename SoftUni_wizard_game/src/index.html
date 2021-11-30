@@ -9,10 +9,10 @@
 
 <body>
     <div class="game-section">
-        <div class="game-score"><span class='points'>0</span> pts.</div>
+        <div class="game-score">Score: <span class='points'>0</span> pts.</div>
         <div class="game-start">Click To Play!</div>
-        <div class="game-area"> </div>
-        <div class="game-over"> </div>
+        <div class="game-area"></div>
+        <div class="game-over hide">Game Over!</div>
     </div>
 
     <script>
@@ -39,12 +39,15 @@
             playerMoveMultiplayer: 4,
             fireBallMultiplayer: 5,
             fireInterval: 1000,
-            cloudSpawInterval: 5000
+            cloudSpawInterval: 5000,
+            bugSpawInterval: 1000,
+            isPlaying: true
         }
 
         let scene = {
             score: 0,
-            lastCloudSpaw: 0
+            lastCloudSpaw: 0,
+            lastBugSpaw: 0
         }
 
 
@@ -61,21 +64,70 @@
         }
 
         function gameAction(timestamp) {
+
             let wizard = document.querySelector('.wizard');
 
+            //Apply gravity
+            let isInAir = player.y + 100 <= gameArea.offsetHeight;
+            if (isInAir) {
+                player.y += game.speed;
+                wizard.style.top = player.y + 'px';
+            }
+
+            //Apply score
+            //scene.score++;
+            gamePoints.innerHTML = scene.score;
+
+            //Create fireBall
+            function addFireBall(x, y) {
+                let fireBall = document.createElement('div');
+
+                fireBall.classList.add('fire-ball');
+                fireBall.x = player.x + 82;
+                fireBall.y = player.y + 50;
+                fireBall.style.top = fireBall.y + 'px';
+                fireBall.style.left = fireBall.x + 'px';
+                gameArea.appendChild(fireBall);
+            }
+
             //Create cloud
-            if (timestamp - scene.lastCloudSpaw > game.cloudSpawInterval) {
+            if (timestamp - scene.lastCloudSpaw > game.cloudSpawInterval + 20000 * Math.random()) {
                 let cloud = document.createElement('div');
                 cloud.classList.add('cloud');
                 cloud.x = gameArea.offsetWidth - 200;
                 cloud.style.left = cloud.x + 'px';
-                cloud.style.top = '200px';
+                cloud.style.top = gameArea.offsetHeight * Math.random() + 'px';
                 gameArea.appendChild(cloud);
                 scene.lastCloudSpaw = timestamp;
             }
 
-            let isInAir = player.y + 100 <= gameArea.offsetHeight;
-            scene.score++;
+            //Create bug
+            if (timestamp - scene.lastBugSpaw > game.bugSpawInterval + 5000 * Math.random()) {
+                let bug = document.createElement('div');
+                bug.classList.add('bug');
+                bug.x = gameArea.offsetWidth - 60;
+                bug.style.left = bug.x + 'px';
+                bug.style.top = gameArea.offsetHeight * Math.random() + 'px';
+                gameArea.appendChild(bug);
+                scene.lastBugSpaw = timestamp;
+            }
+
+            //Move all bugs
+            let bugs = document.querySelectorAll('.bug');
+            bugs.forEach(bug => {
+                bug.x -= game.speed;
+                bug.style.left = bug.x + 'px';
+
+                if (bug.x + 60 == 0) {
+                    bug.parentElement.removeChild(bug);
+                }
+
+                if (hasCollition(bug, wizard)) {
+                    gameOver.classList.remove('hide');
+                    game.isPlaying = false;
+                }
+            });
+
 
             //Move all fireballs
             let fireBalls = document.querySelectorAll('.fire-ball');
@@ -86,9 +138,17 @@
                 if (fireBall.x + 20 > gameArea.offsetWidth) {
                     fireBall.parentElement.removeChild(fireBall);
                 }
+
+                bugs.forEach(bug => {
+                    if (hasCollition(bug, fireBall)) {
+                        bug.parentElement.removeChild(bug);
+                        fireBall.parentElement.removeChild(fireBall);
+                        scene.score += 50;
+                    }
+                });
             });
 
-            //Move clouds
+            //Move all clouds
             let clouds = document.querySelectorAll('.cloud');
             clouds.forEach(cloud => {
                 cloud.x -= game.speed;
@@ -98,16 +158,6 @@
                     cloud.parentElement.removeChild(cloud);
                 }
             });
-
-
-            //Apply gravity
-            if (isInAir) {
-                player.y += game.speed;
-                wizard.style.top = player.y + 'px';
-            }
-
-            //Apply score
-            gamePoints.innerHTML = scene.score;
 
             //Player movement
             if (keys.ArrowUp && player.y > 0) {
@@ -131,7 +181,6 @@
             }
 
             if (keys.Space && timestamp - player.lastTimeFiredBall > game.fireInterval) {
-
                 wizard.classList.add('wizard-fire');
                 addFireBall(player);
                 player.lastTimeFiredBall = timestamp;
@@ -141,20 +190,10 @@
                 wizard.classList.remove('wizard-fire');
             }
 
-            window.requestAnimationFrame(gameAction);
+            if (game.isPlaying) {
+                window.requestAnimationFrame(gameAction);
+            }
         }
-
-        function addFireBall(x, y) {
-            let fireBall = document.createElement('div');
-
-            fireBall.classList.add('fire-ball');
-            fireBall.x = player.x + 82;
-            fireBall.y = player.y + 50;
-            fireBall.style.top = fireBall.y + 'px';
-            fireBall.style.left = fireBall.x + 'px';
-            gameArea.appendChild(fireBall);
-        }
-
 
         function onKeyDown(e) {
             keys[e.code] = true;
@@ -162,6 +201,15 @@
 
         function onKeyUp(e) {
             keys[e.code] = false;
+        }
+
+        function hasCollition(firstGameElement, secondGameElement) {
+            let firstGameElementRect = firstGameElement.getBoundingClientRect();
+            let secondGameElementRect = secondGameElement.getBoundingClientRect();
+
+            return !(firstGameElementRect.right < secondGameElementRect.left || secondGameElementRect.right < firstGameElementRect.left ||
+                firstGameElementRect.top > secondGameElementRect.bottom || secondGameElementRect.top > firstGameElementRect.bottom)
+
         }
     </script>
 </body>
