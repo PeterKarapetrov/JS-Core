@@ -9,7 +9,7 @@
 
 <body>
     <div class="game-section">
-        <div class="game-score">1500 pcs</div>
+        <div class="game-score"><span class='points'>0</span> pts.</div>
         <div class="game-start">Click To Play!</div>
         <div class="game-area"> </div>
         <div class="game-over"> </div>
@@ -20,6 +20,7 @@
         const gameArea = document.querySelector('.game-area');
         const gameOver = document.querySelector('.game-over');
         const gameScore = document.querySelector('.game-score');
+        const gamePoints = gameScore.querySelector('.points');
 
         gameStart.addEventListener('click', onGameStart);
         document.addEventListener('keydown', onKeyDown);
@@ -36,6 +37,10 @@
             speed: 2,
             playerMoveMultiplayer: 4
         };
+
+        let scene = {
+            score: 0
+        }
 
 
         function onGameStart() {
@@ -54,11 +59,26 @@
             let wizard = document.querySelector('.wizard');
 
             let isInAir = player.y + 100 <= gameArea.offsetHeight;
+            scene.score++;
+
+            //Move all fireballs
+            let fireBalls = document.querySelectorAll('.fire-ball');
+            fireBalls.forEach(fireBall => {
+                fireBall.x += game.speed;
+                fireBall.style.left = fireBall.x + 'px';
+            });
+
+
+            //Apply gravity
             if (isInAir) {
                 player.y += game.speed;
                 wizard.style.top = player.y + 'px';
             }
 
+            //Apply score
+            gamePoints.innerHTML = scene.score;
+
+            //Player movement
             if (keys.ArrowUp && player.y > 0) {
                 player.y -= game.speed * game.playerMoveMultiplayer;
                 wizard.style.top = player.y + 'px';
@@ -79,7 +99,28 @@
                 wizard.style.left = player.x + 'px';
             }
 
+            if (keys.Space) {
+
+                wizard.classList.add('wizard-fire');
+                addFireBall(player);
+
+            } else {
+
+                wizard.classList.remove('wizard-fire');
+            }
+
             window.requestAnimationFrame(gameAction);
+        }
+
+        function addFireBall(x, y) {
+            let fireBall = document.createElement('div');
+
+            fireBall.classList.add('fire-ball');
+            fireBall.x = player.x + 82;
+            fireBall.y = player.y + 50;
+            fireBall.style.top = fireBall.y + 'px';
+            fireBall.style.left = fireBall.x + 'px';
+            gameArea.appendChild(fireBall);
         }
 
 
